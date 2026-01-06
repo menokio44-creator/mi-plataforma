@@ -1,17 +1,19 @@
 {
   "name": "mi-plataforma",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Plataforma SaaS de tiendas online",
+  "main": "server.js",
   "scripts": {
-  "start": "node server.js"
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^5.2.1"
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }

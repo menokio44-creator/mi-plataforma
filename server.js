@@ -1,91 +1,76 @@
 const express = require('express');
-const cors = require('cors');
 const path = require('path');
-const fs = require('fs'); // Herramienta para leer/escribir archivos
-
+const fs = require('fs');
 const app = express();
-const PORT = 3000;
 
-app.use(cors());
+// Middleware para leer JSON y archivos estáticos
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// --- SISTEMA DE GUARDADO (PERSISTENCIA) ---
-const ARCHIVO_DB = 'base-de-datos.json';
+// Ruta a nuestra "base de datos" simple
+const DB_PATH = path.join(__dirname, 'base-de-datos.json');
 
-// 1. Variables en memoria
-let datos = {
-    tiendas: [],
-    productos: []
+// Función para leer la base de datos de forma segura
+const leerDB = () => {
+    if (!fs.existsSync(DB_PATH)) return { tiendas: [], productos: [] };
+    const data = fs.readFileSync(DB_PATH);
+    return JSON.parse(data);
 };
 
-// 2. Función para CARGAR datos al iniciar
-function cargarDatos() {
-    try {
-        if (fs.existsSync(ARCHIVO_DB)) {
-            const contenido = fs.readFileSync(ARCHIVO_DB, 'utf-8');
-            datos = JSON.parse(contenido);
-            console.log("💾 Datos cargados correctamente del archivo.");
-        } else {
-            console.log("🆕 Archivo no existe. Se creará uno nuevo al guardar.");
-        }
-    } catch (error) {
-        console.error("Error al cargar datos:", error);
+// Función para guardar en la base de datos
+const guardarDB = (data) => {
+    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
+};
+
+// --- RUTAS DE LA API ---
+
+// 1. Crear una tienda
+app.post('/api/tiendas', (req, res) => {
+    const { nombre } = req.body;
+    const db = leerDB();
+    if (db.tiendas.find(t => t.nombre === nombre)) {
+        return res.status(400).json({ error: "La tienda ya existe" });
     }
-}
-
-// 3. Función para GUARDAR datos en el disco
-function guardarDatos() {
-    try {
-        fs.writeFileSync(ARCHIVO_DB, JSON.stringify(datos, null, 2));
-        console.log("💾 Cambios guardados en el disco duro.");
-    } catch (error) {
-        console.error("Error al guardar datos:", error);
-    }
-}
-
-// Cargamos los datos apenas arranca el servidor
-cargarDatos();
-
-
-// --- RUTAS (API) ---
-
-app.post('/api/crear-tienda', (req, res) => {
-    const nuevaTienda = req.body;
-    
-    // Validar si ya existe
-    const existe = datos.tiendas.find(t => t.nombre === nuevaTienda.nombre);
-    if(existe) {
-        return res.json({ success: false, mensaje: "Ese nombre ya existe" });
-    }
-
-    datos.tiendas.push(nuevaTienda);
-    guardarDatos(); // <--- AQUÍ GUARDAMOS PARA SIEMPRE
-    
-    console.log("🔥 Nueva Tienda:", nuevaTienda.nombre);
+    db.tiendas.push({ nombre });
+    guardarDB(db);
     res.json({ success: true });
 });
 
+// 2. Agregar un producto
 app.post('/api/productos', (req, res) => {
-    const nuevoProducto = req.body;
-    datos.productos.push(nuevoProducto);
-    guardarDatos(); // <--- AQUÍ GUARDAMOS PARA SIEMPRE
-    
-    console.log("📦 Nuevo Producto agregado:", nuevoProducto.nombre);
+    const { tienda, nombre, precio, imagen } = req.body;
+    const db = leerDB();
+    db.productos.push({ tienda, nombre, precio, imagen });
+    guardarDB(db);
     res.json({ success: true });
 });
 
-app.get('/api/productos/:nombreTienda', (req, res) => {
-    const tienda = req.params.nombreTienda;
-    const misProductos = datos.productos.filter(p => p.tienda === tienda);
-    res.json(misProductos);
+// 3. Obtener productos de una tienda específica
+app.get('/api/productos/:tienda', (req, res) => {
+    const db = leerDB();
+    const filtrados = db.productos.filter(p => p.tienda === req.params.tienda);
+    res.json(filtrados);
 });
+
+// --- RUTAS DE NAVEGACIÓN ---
 
 // Ruta para ver la tienda pública
-app.get('/tienda/:nombreTienda', (req, res) => {
+app.get('/tienda/:nombre', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
 });
 
+// Ruta para el panel
+app.get('/panel', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'panel.html'));
+});
+
+// --- CONFIGURACIÓN DE PUERTO PARA RENDER ---
+// Importante: Render usa la variable process.env.PORT
+const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-    console.log(`✅ Servidor BLINDADO listo en: http://localhost:${PORT}`);
+    console.log('-----------------------------------------');
+    console.log(`🚀 SERVIDOR FUNCIONANDO`);
+    console.log(`📍 Puerto: ${PORT}`);
+    console.log('-----------------------------------------');
 });
