@@ -8,98 +8,73 @@
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f9f9f9; }
         header { background: white; padding: 20px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
         h1 { margin: 0; color: #333; text-transform: uppercase; letter-spacing: 1px; }
-        .cart-icon { font-size: 1.5rem; cursor: pointer; }
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px; }
-        
         .product-card { background: white; border-radius: 15px; overflow: hidden; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        
-        /* ESTILO PARA LA FOTO REAL */
-        .product-img { 
-            width: 100%; 
-            height: 250px; 
-            object-fit: cover; /* Esto hace que la foto se recorte bien sin deformarse */
-            background: #eee;
-        }
-        
+        .product-img { width: 100%; height: 250px; object-fit: cover; background: #eee; }
         .product-info { padding: 20px; }
         .price { font-size: 1.2rem; font-weight: bold; color: #2563eb; margin: 10px 0; }
-        .btn-buy { width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .btn-buy:hover { background: #1d4ed8; }
+        .btn-buy { width: 100%; padding: 10px; background: #25d366; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-decoration: none; display: block; text-align: center; }
     </style>
 </head>
 <body>
 
-    <header>
+    <header id="miHeader">
         <h1 id="tituloTienda">Cargando...</h1>
-        <div class="cart-icon">🛒</div>
+        <div style="font-size: 1.5rem;">🛒</div>
     </header>
 
     <div class="container">
-        <div class="products-grid" id="gridProductos">
-            </div>
+        <div class="products-grid" id="gridProductos"></div>
     </div>
 
     <script>
         const partesUrl = window.location.pathname.split('/');
         const nombreTienda = partesUrl[partesUrl.length - 1];
         document.getElementById('tituloTienda').innerText = nombreTienda.replace('-', ' ').toUpperCase();
-        document.title = "Tienda " + nombreTienda;
 
         async function cargarCatalogo() {
-            const respuesta = await fetch(`/api/productos/${nombreTienda}`);
-            const productos = await respuesta.json();
-            const grid = document.getElementById('gridProductos');
+            try {
+                const respuesta = await fetch(`/api/productos/${nombreTienda}`);
+                const productos = await respuesta.json();
+                const grid = document.getElementById('gridProductos');
 
-            if(productos.length === 0) {
-                grid.innerHTML = '<p>No hay productos disponibles.</p>';
-                return;
-            }
+                if(productos.length === 0) {
+                    grid.innerHTML = '<p>No hay productos disponibles aún.</p>';
+                    return;
+                }
 
-            let html = '';
-            productos.forEach(prod => {
-                // Si el usuario puso link, usamos ese. Si no, ponemos una imagen gris por defecto.
-                const imagenFinal = prod.imagen ? prod.imagen : 'https://via.placeholder.com/300?text=Sin+Foto';
+                let html = '';
+                productos.forEach(prod => {
+                    const imagenFinal = prod.imagen || 'https://via.placeholder.com/300?text=Sin+Foto';
+                    const mensajeWeb = `Hola! Quiero comprar ${prod.nombre} por Gs. ${prod.precio}. ¿Tienen stock?`;
+                    const linkWA = `https://wa.me/595981123456?text=${encodeURIComponent(mensajeWeb)}`;
 
-                html += `
-                    productos.forEach(prod => {
-                const imagenFinal = prod.imagen ? prod.imagen : 'https://via.placeholder.com/300?text=Sin+Foto';
-
-                // Preparamos el mensaje de WhatsApp
-                const mensajeWeb = `Hola! Quiero comprar ${prod.nombre} por Gs. ${prod.precio}. ¿Tienen stock?`;
-                const linkWA = `https://wa.me/595981123456?text=${encodeURIComponent(mensajeWeb)}`; 
-                // NOTA: Luego haremos que el dueño de la tienda pueda cambiar ese número por el suyo.
-
-                html += `
-                    <div class="product-card">
-                        <img src="${imagenFinal}" class="product-img" alt="${prod.nombre}">
-                        <div class="product-info">
-                            <h3>${prod.nombre}</h3>
-                            <div class="price">Gs. ${prod.precio}</div>
-                            <a href="${linkWA}" target="_blank" style="text-decoration:none;">
-                                <button class="btn-buy" style="background-color: #25d366; border:none;">
-                                    Comprar por WhatsApp 📱
-                                </button>
-                            </a>
+                    html += `
+                        <div class="product-card">
+                            <img src="${imagenFinal}" class="product-img">
+                            <div class="product-info">
+                                <h3>${prod.nombre}</h3>
+                                <div class="price">Gs. ${prod.precio}</div>
+                                <a href="${linkWA}" target="_blank" class="btn-buy">Comprar por WhatsApp 📱</a>
+                            </div>
                         </div>
-                    </div>
-                `;
-            });
-            grid.innerHTML = html;
+                    `;
+                });
+                grid.innerHTML = html;
+
+                // Aplicar color si existe
+                const color = localStorage.getItem(`color_${nombreTienda}`);
+                if(color) {
+                    document.getElementById('miHeader').style.backgroundColor = color;
+                    document.getElementById('tituloTienda').style.color = 'white';
+                }
+            } catch (e) {
+                console.error("Error cargando productos", e);
+            }
         }
         cargarCatalogo();
-  // 3. APLICAR COLOR PERSONALIZADO
-        const colorPersonalizado = localStorage.getItem(`color_${nombreTienda}`);
-        if(colorPersonalizado) {
-            document.querySelector('header').style.backgroundColor = colorPersonalizado;
-            document.querySelector('header h1').style.color = 'white'; // Para que resalte
-            // Pintar todos los botones con ese color (después de que carguen)
-            setTimeout(() => {
-                document.querySelectorAll('.btn-buy').forEach(btn => {
-                    btn.style.backgroundColor = colorPersonalizado;
-                });
-            }, 500);
-        }  </script>
+    </script>
 </body>
 </html>
