@@ -1,0 +1,17 @@
+{
+  "tiendas": [
+    {
+      "nombre": "sadabox prueba",
+      "email": "menokio44@gmail.com",
+      "pass": "asdasd"
+    }
+  ],
+  "productos": [
+    {
+      "tienda": "sadabox prueba",
+      "nombre": "zapatilla nike",
+      "precio": "125.000",
+      "imagen": ""
+    }
+  ]
+}
