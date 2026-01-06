@@ -3,73 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Cuenta - TuPlataforma</title>
+    <title>Crear tu Tienda - Mi Plataforma</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: #333; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px;}
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f0f2f5; }
+        .card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 20px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
         button:hover { background: #1d4ed8; }
-        .back-link { display: block; text-align: center; margin-top: 15px; text-decoration: none; color: #666; font-size: 0.9rem;}
     </style>
 </head>
 <body>
-
-    <div class="login-box">
-        <h2>🚀 Empieza tu negocio</h2>
-        <form id="registroForm">
-            <label>Nombre de tu tienda</label>
-            <input type="text" placeholder="Ej: zapatos-juan" required>
-            
-            <label>Tu Correo</label>
-            <input type="email" placeholder="juan@gmail.com" required>
-            
-            <label>Contraseña</label>
-            <input type="password" placeholder="********" required>
-            
-            <button type="submit">Crear Tienda</button>
-        </form>
-        <a href="/" class="back-link">← Volver al inicio</a>
+    <div class="card">
+        <h1>Empezá tu Tienda 🚀</h1>
+        <p>Elegí un nombre para tu negocio</p>
+        <input type="text" id="nombreTienda" placeholder="Ej: mi-negocio-cool">
+        <button onclick="crear()">Crear mi Tienda</button>
     </div>
 
     <script>
-        document.getElementById('registroForm').addEventListener('submit', async function(e) {
-            e.preventDefault(); 
+        async function crear() {
+            const nombre = document.getElementById('nombreTienda').value.trim().toLowerCase().replace(/\s+/g, '-');
+            if(!nombre) return alert("Poné un nombre válido");
 
-            // 1. Capturamos datos
-            const nombreTienda = document.querySelector('input[type="text"]').value;
-            const correo = document.querySelector('input[type="email"]').value;
-            const password = document.querySelector('input[type="password"]').value;
+            const res = await fetch('/api/tiendas', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nombre })
+            });
 
-            const datos = { nombre: nombreTienda, email: correo, pass: password };
-
-            // 2. Enviamos al servidor
-            try {
-                const respuesta = await fetch('/api/crear-tienda', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
-                });
-
-                const resultado = await respuesta.json();
-
-                if (resultado.success) {
-                    // Guardar nombre y REDIRIGIR
-                    localStorage.setItem('nombreTiendaReciente', nombreTienda);
-                    
-                    // ESTA ES LA LÍNEA QUE TE FALTABA
-                    window.location.href = '/panel.html';
-                } else {
-                    alert('❌ Error al crear tienda.');
-                }
-
-            } catch (error) {
-                console.error('Error:', error);
-                alert('No se pudo conectar con el servidor.');
+            if(res.ok) {
+                localStorage.setItem('nombreTiendaReciente', nombre);
+                window.location.href = '/panel.html';
+            } else {
+                alert("Ese nombre ya existe o hubo un error.");
             }
-        });
+        }
     </script>
-
 </body>
 </html>

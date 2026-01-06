@@ -3,144 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control - Mi Plataforma</title>
+    <title>Panel de Control</title>
     <style>
         body { font-family: sans-serif; margin: 0; display: flex; height: 100vh; background: #f4f7f6; }
-        .sidebar { width: 250px; background: #1e293b; color: white; display: flex; flex-direction: column; }
-        .sidebar h2 { padding: 20px; text-align: center; border-bottom: 1px solid #334155; margin: 0; }
-        .menu { list-style: none; padding: 0; margin-top: 20px; }
-        .menu li a { display: block; padding: 15px 20px; color: #cbd5e1; text-decoration: none; cursor:pointer; }
-        .menu li a:hover, .active { background: #2563eb; color: white; }
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .btn-action { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .product-list { margin-top: 30px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .product-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
-        .thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; margin-right: 15px; }
-        #modalProducto { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 10px; width: 400px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; box-sizing: border-box; border-radius: 5px; }
-        #seccionConfig { display: none; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .sidebar { width: 250px; background: #1e293b; color: white; padding: 20px; }
+        .main { flex: 1; padding: 40px; overflow-y: auto; }
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+        .btn { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .grid-prods { display: grid; gap: 10px; margin-top: 20px; }
+        .item-prod { background: #fff; padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
-
     <div class="sidebar">
-        <h2>Panel SaaS 🚀</h2>
-        <ul class="menu">
-            <li><a id="btnProd" onclick="verSeccion('productos')" class="active">📦 Productos</a></li>
-            <li><a id="btnConf" onclick="verSeccion('config')">⚙️ Configuración</a></li>
-            <li><a href="/">🚪 Salir</a></li>
-        </ul>
+        <h2>Panel SaaS</h2>
+        <p>Tienda: <strong id="shopName">...</strong></p>
+        <hr>
+        <button class="btn" onclick="location.href='/crear-tienda.html'" style="background:#475569">Cambiar Tienda</button>
     </div>
-
-    <div class="main-content">
-        <div id="seccionProductos">
-            <div class="header">
-                <h1>Tienda: <span id="nombreUsuario">...</span></h1>
-                <button class="btn-action" onclick="abrirModal()">+ Agregar Producto</button>
-            </div>
-            <div class="product-list" id="listaProductos">
-                <h3>Tus Productos</h3>
-                <p>Cargando...</p>
-            </div>
+    <div class="main">
+        <div class="card">
+            <h3>⚙️ Configuración de Contacto</h3>
+            <label>WhatsApp (ej: 595981123456):</label>
+            <input type="text" id="wsInput" placeholder="Número sin el +">
+            <button class="btn" onclick="guardarConfig()">Guardar WhatsApp</button>
         </div>
 
-        <div id="seccionConfig">
-            <h1>Configuración del Negocio</h1>
-            <p>Personaliza cómo te contactan y cómo se ve tu tienda.</p>
-            
-            <label><strong>Color de la marca:</strong></label>
-            <input type="color" id="colorTienda" style="height: 60px; cursor: pointer;">
-            
-            <label><strong>WhatsApp para Pedidos:</strong></label>
-            <input type="text" id="wsTienda" placeholder="Ej: 595981123456 (Sin el +)">
-            
-            <br><br>
-            <button class="btn-action" onclick="guardarAjustes()">Guardar Cambios</button>
+        <div class="card">
+            <h3>📦 Agregar Producto</h3>
+            <input type="text" id="pNombre" placeholder="Nombre del producto">
+            <input type="number" id="pPrecio" placeholder="Precio Gs.">
+            <input type="text" id="pImg" placeholder="URL de la imagen">
+            <button class="btn" style="background:#10b981" onclick="agregarProd()">Publicar Producto</button>
         </div>
-    </div>
 
-    <div id="modalProducto">
-        <div class="modal-content">
-            <h3>Nuevo Producto</h3>
-            <input type="text" id="prodNombre" placeholder="Nombre del producto">
-            <input type="number" id="prodPrecio" placeholder="Precio (Gs.)">
-            <input type="text" id="prodImagen" placeholder="URL de la imagen">
-            <button class="btn-action" onclick="guardarProducto()">Guardar</button>
-            <button class="btn-action" style="background: #94a3b8;" onclick="cerrarModal()">Cancelar</button>
+        <div class="card" id="lista">
+            <h3>Tus Productos</h3>
+            <div class="grid-prods" id="prodContenedor"></div>
         </div>
     </div>
 
     <script>
-        const tiendaActual = localStorage.getItem('nombreTiendaReciente');
-        document.getElementById('nombreUsuario').innerText = tiendaActual;
+        const tienda = localStorage.getItem('nombreTiendaReciente');
+        document.getElementById('shopName').innerText = tienda;
+        document.getElementById('wsInput').value = localStorage.getItem(`ws_${tienda}`) || '';
 
-        // Cargar valores guardados al iniciar
-        document.getElementById('colorTienda').value = localStorage.getItem(`color_${tiendaActual}`) || '#2563eb';
-        document.getElementById('wsTienda').value = localStorage.getItem(`ws_${tiendaActual}`) || '';
-
-        function verSeccion(seccion) {
-            if(seccion === 'productos') {
-                document.getElementById('seccionProductos').style.display = 'block';
-                document.getElementById('seccionConfig').style.display = 'none';
-                document.getElementById('btnProd').classList.add('active');
-                document.getElementById('btnConf').classList.remove('active');
-            } else {
-                document.getElementById('seccionProductos').style.display = 'block'; // Mostrar ambos para este ejemplo
-                document.getElementById('seccionProductos').style.display = 'none';
-                document.getElementById('seccionConfig').style.display = 'block';
-                document.getElementById('btnConf').classList.add('active');
-                document.getElementById('btnProd').classList.remove('active');
-            }
+        function guardarConfig() {
+            const num = document.getElementById('wsInput').value;
+            localStorage.setItem(`ws_${tienda}`, num);
+            alert("WhatsApp guardado!");
         }
 
-        function guardarAjustes() {
-            const color = document.getElementById('colorTienda').value;
-            const ws = document.getElementById('wsTienda').value;
-            localStorage.setItem(`color_${tiendaActual}`, color);
-            localStorage.setItem(`ws_${tiendaActual}`, ws);
-            alert('¡Configuración guardada correctamente!');
-        }
-
-        async function cargarProductos() {
-            const respuesta = await fetch(`/api/productos/${tiendaActual}`);
-            const productos = await respuesta.json();
-            const listaDiv = document.getElementById('listaProductos');
-            let html = '<h3>Mis Productos</h3>';
-            productos.forEach(prod => {
-                const img = prod.imagen || 'https://via.placeholder.com/50';
-                html += `<div class="product-item">
-                    <div style="display:flex; align-items:center;">
-                        <img src="${img}" class="thumb">
-                        <strong>${prod.nombre}</strong>
-                    </div>
-                    <span>Gs. ${prod.precio}</span>
-                </div>`;
-            });
-            listaDiv.innerHTML = html;
-        }
-
-        function abrirModal() { document.getElementById('modalProducto').style.display = 'flex'; }
-        function cerrarModal() { document.getElementById('modalProducto').style.display = 'none'; }
-
-        async function guardarProducto() {
+        async function agregarProd() {
             const datos = {
-                tienda: tiendaActual,
-                nombre: document.getElementById('prodNombre').value,
-                precio: document.getElementById('prodPrecio').value,
-                imagen: document.getElementById('prodImagen').value
+                tienda,
+                nombre: document.getElementById('pNombre').value,
+                precio: document.getElementById('pPrecio').value,
+                imagen: document.getElementById('pImg').value
             };
-            await fetch('/api/productos', { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify(datos) 
+            await fetch('/api/productos', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(datos)
             });
-            cerrarModal();
-            cargarProductos();
+            location.reload();
         }
 
-        cargarProductos();
+        async function cargar() {
+            const res = await fetch(`/api/productos/${tienda}`);
+            const prods = await res.json();
+            const div = document.getElementById('prodContenedor');
+            div.innerHTML = prods.map(p => `
+                <div class="item-prod">
+                    <span>${p.nombre}</span>
+                    <strong>Gs. ${p.precio}</strong>
+                </div>
+            `).join('');
+        }
+        cargar();
     </script>
 </body>
 </html>
