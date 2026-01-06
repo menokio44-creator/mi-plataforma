@@ -3,11 +3,11 @@ const path = require('path');
 const fs = require('fs');
 const app = express();
 
-// Middleware para leer JSON y archivos estáticos
+// Middleware para leer JSON y servir archivos de la carpeta 'public'
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Ruta a nuestra "base de datos" simple
+// Ruta a nuestra base de datos simple
 const DB_PATH = path.join(__dirname, 'base-de-datos.json');
 
 // Función para leer la base de datos de forma segura
@@ -45,7 +45,7 @@ app.post('/api/productos', (req, res) => {
     res.json({ success: true });
 });
 
-// 3. Obtener productos de una tienda específica
+// 3. Obtener productos de una tienda
 app.get('/api/productos/:tienda', (req, res) => {
     const db = leerDB();
     const filtrados = db.productos.filter(p => p.tienda === req.params.tienda);
@@ -64,13 +64,13 @@ app.get('/panel', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'panel.html'));
 });
 
-// --- CONFIGURACIÓN DE PUERTO PARA RENDER ---
-// Importante: Render usa la variable process.env.PORT
+// --- CONFIGURACIÓN CRÍTICA PARA RENDER ---
+// Usamos 0.0.0.0 para que Render pueda detectar el servidor activo
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log('-----------------------------------------');
-    console.log(`🚀 SERVIDOR FUNCIONANDO`);
-    console.log(`📍 Puerto: ${PORT}`);
+    console.log(`🚀 SERVIDOR FUNCIONANDO EXITOSAMENTE`);
+    console.log(`📍 Puerto asignado: ${PORT}`);
     console.log('-----------------------------------------');
 });
