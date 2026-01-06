@@ -19,41 +19,33 @@
     </style>
 </head>
 <body>
-
     <header id="miHeader">
         <h1 id="tituloTienda">Cargando...</h1>
         <div style="font-size: 1.5rem;">🛒</div>
     </header>
-
     <div class="container">
         <div class="products-grid" id="gridProductos"></div>
     </div>
-
     <script>
-        // 1. Obtener el nombre de la tienda desde la URL
         const partesUrl = window.location.pathname.split('/');
         const nombreTienda = partesUrl[partesUrl.length - 1];
         document.getElementById('tituloTienda').innerText = nombreTienda.replace('-', ' ').toUpperCase();
 
         async function cargarCatalogo() {
             try {
-                // 2. Pedir productos al servidor
                 const respuesta = await fetch(`/api/productos/${nombreTienda}`);
                 const productos = await respuesta.json();
                 const grid = document.getElementById('gridProductos');
-
                 if(productos.length === 0) {
                     grid.innerHTML = '<p>Esta tienda no tiene productos aún.</p>';
                     return;
                 }
-
                 let html = '';
-                // UN SOLO BUCLE (Corregido)
+                // UN SOLO BUCLE CORREGIDO
                 productos.forEach(prod => {
                     const imagenFinal = prod.imagen || 'https://via.placeholder.com/300?text=Sin+Foto';
                     const mensajeWeb = `Hola! Quiero comprar ${prod.nombre} por Gs. ${prod.precio}. ¿Está disponible?`;
                     const linkWA = `https://wa.me/595981123456?text=${encodeURIComponent(mensajeWeb)}`;
-
                     html += `
                         <div class="product-card">
                             <img src="${imagenFinal}" class="product-img">
@@ -62,12 +54,9 @@
                                 <div class="price">Gs. ${prod.precio}</div>
                                 <a href="${linkWA}" target="_blank" class="btn-buy">Comprar por WhatsApp 📱</a>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
                 grid.innerHTML = html;
-
-                // 3. Aplicar color personalizado si existe
                 const color = localStorage.getItem(`color_${nombreTienda}`);
                 if(color) {
                     document.getElementById('miHeader').style.backgroundColor = color;
@@ -77,7 +66,6 @@
                 console.error("Error cargando productos", error);
             }
         }
-
         cargarCatalogo();
     </script>
 </body>
